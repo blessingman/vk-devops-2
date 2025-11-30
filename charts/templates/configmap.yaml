@@ -1,0 +1,51 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-users-config
+  labels:
+    app: clickhouse
+    release: {{ .Release.Name }}
+data:
+  # Мы генерируем файл users.xml, который ClickHouse автоматически подхватит при старте.
+  # ClickHouse мержит (объединяет) xml-конфиги из папки users.d
+  users.xml: |
+    <yandex>
+      <!-- Настройки профилей (квот и ограничений) -->
+      <profiles>
+        <default>
+          <!-- Включаем логирование запросов для отладки -->
+          <log_queries>1</log_queries>
+        </default>
+      </profiles>
+
+      <!-- Секция пользователей -->
+      <users>
+        <!-- Настраиваем стандартного пользователя default -->
+        <default>
+          <password></password> <!-- Без пароля (для тестов) -->
+          <networks>
+            <ip>::/0</ip>
+          </networks>
+          <profile>default</profile>
+          <quota>default</quota>
+        </default>
+
+        <!-- Требование 3: Динамическая генерация пользователей из values.yaml -->
+        <!-- Используем цикл range из Go-шаблонов Helm -->
+        {{- range .Values.dbUsers }}
+        <{{ .username }}>
+          <!-- Пароль в открытом виде (plaintext). 
+               Для PROD-окружений рекомендуется использовать sha256_hex -->
+          <password>{{ .password }}</password>
+          
+          <!-- Ограничение доступа по IP-сетям -->
+          <networks>
+            <ip>{{ .networks.ip }}</ip>
+          </networks>
+          
+          <profile>default</profile>
+          <quota>default</quota>
+        </{{ .username }}>
+        {{- end }}
+      </users>
+    </yandex>

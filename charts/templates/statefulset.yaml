@@ -1,0 +1,54 @@
+# Используем StatefulSet вместо Deployment, так как ClickHouse — это база данных.
+# StatefulSet гарантирует стабильные сетевые имена (pod-0, pod-1) и привязку дисков.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: clickhouse
+    release: {{ .Release.Name }}
+spec:
+  serviceName: {{ .Release.Name }}
+  # Требование 1: Single-инсталляция (1 реплика)
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clickhouse
+  template:
+    metadata:
+      labels:
+        app: clickhouse
+    spec:
+      containers:
+        - name: clickhouse
+          # Требование 2: Версия образа берется из values.yaml
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          
+          # Открываем стандартные порты ClickHouse
+          ports:
+            - name: http
+              containerPort: 8123
+            - name: tcp
+              containerPort: 9000
+          
+          # Liveness Probe: проверка, жив ли контейнер.
+          # ClickHouse имеет встроенный эндпоинт /ping, отвечающий "Ok."
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: http
+            initialDelaySeconds: 10 # Ждем 10 сек перед первой проверкой
+            periodSeconds: 10       # Проверяем каждые 10 сек
+
+          # Монтируем наш сгенерированный конфиг с пользователями
+          volumeMounts:
+            - name: users-config
+              mountPath: /etc/clickhouse-server/users.d/users.xml
+              subPath: users.xml
+
+      # Описываем тома
+      volumes:
+        - name: users-config
+          configMap:
+            name: {{ .Release.Name }}-users-config

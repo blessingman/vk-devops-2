@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: clickhouse
+    release: {{ .Release.Name }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: clickhouse
+  ports:
+    # HTTP интерфейс (для curl, веб-UI, интеграций)
+    - name: http
+      port: {{ .Values.service.httpPort }}
+      targetPort: 8123
+      protocol: TCP
+      
+    # Native TCP интерфейс (для clickhouse-client и драйверов)
+    - name: tcp
+      port: {{ .Values.service.tcpPort }}
+      targetPort: 9000
+      protocol: TCP
