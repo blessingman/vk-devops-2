@@ -6,7 +6,7 @@ metadata:
     app: clickhouse
     release: {{ .Release.Name }}
 data:
-  # Мы генерируем файл users.xml, который ClickHouse автоматически подхватит при старте.
+  # Файл users.xml, который ClickHouse автоматически подхватит при старте.
   # ClickHouse мержит (объединяет) xml-конфиги из папки users.d
   users.xml: |
     <yandex>
@@ -20,7 +20,7 @@ data:
 
       <!-- Секция пользователей -->
       <users>
-        <!-- Настраиваем стандартного пользователя default -->
+        <!-- Настройка стандартного пользователя default -->
         <default>
           <password></password> <!-- Без пароля (для тестов) -->
           <networks>
@@ -31,7 +31,7 @@ data:
         </default>
 
         <!-- Требование 3: Динамическая генерация пользователей из values.yaml -->
-        <!-- Используем цикл range из Go-шаблонов Helm -->
+        <!-- Использование цикла range из Go-шаблонов Helm -->
         {{- range .Values.dbUsers }}
         <{{ .username }}>
           <!-- Пароль в открытом виде (plaintext). 
