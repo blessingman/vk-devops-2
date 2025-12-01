@@ -1,4 +1,4 @@
-# Используем StatefulSet вместо Deployment, так как ClickHouse — это база данных.
+# StatefulSet вместо Deployment, так как ClickHouse — это база данных.
 # StatefulSet гарантирует стабильные сетевые имена (pod-0, pod-1) и привязку дисков.
 apiVersion: apps/v1
 kind: StatefulSet
@@ -25,7 +25,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           
-          # Открываем стандартные порты ClickHouse
+          # Открытие стандартные порты ClickHouse
           ports:
             - name: http
               containerPort: 8123
@@ -41,13 +41,13 @@ spec:
             initialDelaySeconds: 10 # Ждем 10 сек перед первой проверкой
             periodSeconds: 10       # Проверяем каждые 10 сек
 
-          # Монтируем наш сгенерированный конфиг с пользователями
+          # Монтирование сгенерированного конфига с пользователями
           volumeMounts:
             - name: users-config
               mountPath: /etc/clickhouse-server/users.d/users.xml
               subPath: users.xml
 
-      # Описываем тома
+      # Описание тома
       volumes:
         - name: users-config
           configMap:
