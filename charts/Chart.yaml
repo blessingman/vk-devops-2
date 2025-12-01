@@ -2,9 +2,9 @@ apiVersion: v2
 name: clickhouse-simple
 description: Helm-чарт для развертывания single-node инсталляции ClickHouse в Kubernetes.
 type: application
-# Версия самого чарта (изменяем при правках логики чарта)
+# Версия самого чарта (что будет изменяться при правках логики чарта)
 version: 0.1.0
-# Версия приложения внутри (ClickHouse), которую ставим по умолчанию
+# Версия приложения внутри (ClickHouse), которую стоит по умолчанию
 appVersion: "23.8"
 maintainers:
   - name: "DevOps Engineer"
